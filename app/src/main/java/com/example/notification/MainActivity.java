@@ -1,10 +1,16 @@
 package com.example.notification;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.NotificationCompat;
 
-import android.annotation.SuppressLint;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Intent;
+import android.content.res.Resources;
+import android.graphics.BitmapFactory;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -19,7 +25,7 @@ public class MainActivity extends AppCompatActivity {
     EditText etJudul, etPesan;
 
 
-    @SuppressLint("MissingInflatedId")
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -32,13 +38,38 @@ public class MainActivity extends AppCompatActivity {
         btnNotifikasi.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent I = new Intent(getApplicationContext(), MainActivity.class);
-                tampilNotifikasi(etJudul.getText().toString(),etPesan.getText().toString(), I);
+                Intent i = new Intent(getApplicationContext(), MainActivity.class);
+                tampilNotifikasi(etJudul.getText().toString(),etPesan.getText().toString(), i);
             }
         });
     }
 
-    private void tampilNotifikasi(String toString, String toString1, Intent i) {
-        PendingIntent pendingIntent = PendingIntent.getActivity(MainActivity.this, notifikasi, I, PendingIntent.FLAG_UPDATE_CURRENT);
+    private void tampilNotifikasi(String judul, String pesan, Intent i) {
+        PendingIntent pendingIntent = PendingIntent.getActivity(MainActivity.this, notifikasi, i, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        NotificationManager notificationManager = (NotificationManager) MainActivity.this.getSystemService(NOTIFICATION_SERVICE);
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(MainActivity.this, chID)
+                .setSmallIcon(R.drawable.ic_notification)
+                .setLargeIcon(BitmapFactory.decodeResource(Resources.getSystem(), R.drawable.ic_notification))
+                .setContentTitle(judul)
+                .setContentText(pesan)
+                .setContentIntent(pendingIntent)
+                .setAutoCancel(true);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(chID, chName, NotificationManager.IMPORTANCE_DEFAULT);
+            channel.setDescription(chName);
+            builder.setChannelId(chID);
+            if (notificationManager != null) {
+                notificationManager.createNotificationChannel(channel);
+            }
+        }
+
+        Notification notification = builder.build();
+
+        if (notificationManager != null) {
+            notificationManager.notify(notifikasi, notification);
+        }
+
     }
 }
